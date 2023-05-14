@@ -1,0 +1,239 @@
+Sub Ticker()
+
+    'Goes through each whole worksheet
+    For Each ws In Worksheets
+    
+    ' Create a Variable to Hold Ticker Name
+        'Dim WorksheetTicker As String
+
+        ' Determine the Last Row
+'        This line means: selects (.Select)
+'        the last non-empty cell (.End) up (xlUp) from the last cell (& Rows.Count)
+'        of column A (1)
+'        So this command line behaves exactly as if you were in the last cell of range 1  and you press CTRL + up arrow.
+'        Why go from the bottom of the sheet to the top and not the other way around?
+'        Quite simply, to avoid a selection error if it turned out that the array contains empty cells.
+        LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        ' Add a Column for the Ticker Symbol
+        ws.Range("I1").EntireColumn.Insert
+        
+        ' Add the word Ticker to the Column Header
+        ws.Cells(1, 9).Value = "Ticker"
+        
+        
+        ' Add the word Yearly Change to the Column Header
+        ws.Cells(1, 10).Value = "Yearly Change"
+        
+        
+        ' Add the word Percent Change to the Column Header
+        ws.Cells(1, 11).Value = "Percent Change"
+               
+        ' Add the word Total Stock Volume to the Column Header
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+        
+        
+        ' Add a Column for the Greatest
+        ws.Range("O1").EntireColumn.Insert
+        
+        ' Add the word Greatest to the Column Header
+        ws.Cells(1, 15).Value = "Greatest"
+        
+        ' Add the word Ticker to the Column Header
+        ws.Cells(1, 16).Value = "Ticker"
+        
+        ' Add the word Value to the Column Header
+        ws.Cells(1, 17).Value = "Value"
+        
+        'temp string and int value
+        Dim tiksym As String
+        Dim j As Integer
+        tiksym = ws.Cells(2, 1).Value
+        ws.Cells(2, 9) = tiksym
+        j = 1
+
+        'finds all unique ticker symbols and spits them out to ticker field
+        For i = 2 To LastRow
+            If tiksym <> ws.Cells(i, 1) Then
+                tiksym = ws.Cells(i, 1)
+                ws.Cells(2 + j, 9) = tiksym
+                j = j + 1
+            End If
+            
+        Next i
+        
+        'temp,k,year, min, and max value
+        tiksym = ws.Cells(2, 9)
+        Dim openstock As Double
+        Dim closestock As Double
+        Dim change As Double
+        Dim k As Integer
+        openstock = ws.Cells(2, 3)
+        k = 0
+
+        'finds the yearly change change for all unique stocks
+        For l = 2 To LastRow
+            
+            If tiksym <> ws.Cells(l, 1) Then
+            closestock = ws.Cells(l - 1, 6)
+            change = closestock - openstock
+            openstock = ws.Cells(l, 3)
+            ws.Cells(2 + k, 10) = change
+            tiksym = ws.Cells(l, 1)
+            k = k + 1
+            
+            ElseIf l = LastRow Then
+            closestock = ws.Cells(LastRow, 6)
+            change = closestock - openstock
+            ws.Cells(2 + k, 10) = change
+
+
+            End If
+
+        Next l
+
+        'temp,m,year, min, and max value
+        tiksym = ws.Cells(2, 9)
+        Dim year As Double
+        Dim m As Integer
+        openstock = ws.Cells(2, 3)
+        m = 0
+
+        'finds the Percent change change for all unique stocks
+        For n = 2 To LastRow
+
+            If tiksym <> ws.Cells(n, 1) Then
+            closestock = ws.Cells(n - 1, 6)
+            year = ((closestock - openstock) / openstock)
+            openstock = ws.Cells(n, 3)
+            ws.Cells(2 + m, 11) = year
+            tiksym = ws.Cells(n, 1)
+            m = m + 1
+            
+            ElseIf n = LastRow Then
+            closestock = ws.Cells(LastRow, 6)
+            year = ((closestock - openstock) / openstock)
+            ws.Cells(2 + m, 11) = year
+
+            End If
+
+        Next n
+
+        'format percent sign
+        ws.Range("K:K").NumberFormat = "0.00%"
+
+        'temp value
+        Dim h As Integer
+        Dim volume As Double
+        h = 0
+        volume = 0
+        tiksym = ws.Cells(2, 9)
+
+        'finds the total volume for all unique stocks
+        For b = 2 To LastRow
+
+            If tiksym = ws.Cells(b, 1) Then
+            volume = volume + ws.Cells(b, 7)
+                If b = LastRow Then
+                ws.Cells(2 + h, 12) = volume
+                End If
+                
+            ElseIf tiksym <> ws.Cells(b, 1) Then
+            ws.Cells(2 + h, 12) = volume
+            volume = 0
+            volume = volume + ws.Cells(b, 7)
+            tiksym = ws.Cells(b, 1)
+            h = h + 1
+
+            End If
+
+        Next b
+
+        'name greatest values titles
+        ws.Range("O2").Value = "greatest % increase"
+        ws.Range("O3").Value = "greatest % decrease"
+        ws.Range("O4").Value = "greatest total volume"
+
+        LastRow2 = ws.Cells(Rows.Count, 9).End(xlUp).Row
+
+        Dim increase As Double
+        increase = 0
+
+        'finding greatest increase
+        For g = 2 To LastRow2
+            If increase <= ws.Cells(g, 11) Then
+                increase = ws.Cells(g, 11)
+                'puts in ticker symbol
+                ws.Cells(2, 16) = ws.Cells(g, 9)
+                'puts in largest found increase
+                ws.Cells(2, 17) = increase
+            End If
+        Next g
+
+        Dim decrease As Double
+        decrease = ws.Cells(2, 11)
+
+        'finding greatest decrease
+        For p = 2 To LastRow2
+            If decrease >= ws.Cells(p, 11) Then
+                decrease = ws.Cells(p, 11)
+                'puts in ticker symbol
+                ws.Cells(3, 16) = ws.Cells(p, 9)
+                'puts in largest found decrease
+                ws.Cells(3, 17) = decrease
+            End If
+        Next p
+
+        Dim increasev As Double
+        increasev = 0
+
+        'finding greatest volume
+        For w = 2 To LastRow2
+            If increasev <= ws.Cells(w, 12) Then
+                increasev = ws.Cells(w, 12)
+                'puts in ticker symbol
+                ws.Cells(4, 16) = ws.Cells(w, 9)
+                'puts in largest found increase
+                ws.Cells(4, 17) = increasev
+            End If
+        Next w
+
+        'doing color conditions
+        For r = 2 To LastRow2
+            If ws.Cells(r, 10) > 0 Then
+                ws.Cells(r, 10).Interior.ColorIndex = 4
+            ElseIf Cells(r, 10) < 0 Then
+                ws.Cells(r, 10).Interior.ColorIndex = 3
+            End If
+        Next r
+
+        'autofit function for columns
+        Worksheets(ActiveSheet.Name).Cells.EntireColumn.AutoFit
+        'format percent sign
+        ws.Range("Q2").NumberFormat = "0.00%"
+        ws.Range("Q3").NumberFormat = "0.00%"
+
+
+    Next ws
+
+
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
